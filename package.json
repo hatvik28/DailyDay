@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node .\\node_modules\\typescript\\bin\\tsc --ignoreConfig src\\lib\\utils.ts src\\lib\\tasks.ts src\\lib\\dashboard.ts src\\lib\\test-runner.ts --module node16 --moduleResolution node16 --target ES2022 --types node --outDir .tmp-tests --esModuleInterop --skipLibCheck && node .tmp-tests\\test-runner.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "db:push": "npx prisma db push",
     "db:studio": "npx prisma studio",
     "db:seed": "npx prisma db seed",
@@ -35,13 +37,18 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
+    "@vitest/coverage-v8": "^4.1.2",
     "eslint": "^10.1.0",
+    "jsdom": "^29.0.1",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vitest": "^4.1.2"
   }
 }
