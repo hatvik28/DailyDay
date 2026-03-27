@@ -19,8 +19,9 @@ model User {
   habits       Habit[]
   categories     Category[]
   recurringTasks RecurringTask[]
-  fitbitToken    FitbitToken?
-  gmailToken     GmailToken?
+  fitbitToken      FitbitToken?
+  gmailToken       GmailToken?
+  jobApplications  JobApplication[]
 }
 
 model DayEntry {
@@ -214,4 +215,27 @@ model GmailCache {
   fetchedAt DateTime @default(now())
 
   @@index([userId])
+}
+
+model JobApplication {
+  id          String   @id @default(cuid())
+  userId      String
+  company     String
+  role        String
+  status      String   @default("applied") // applied, phone_screen, interview, offer, rejected, withdrawn
+  url         String   @default("")
+  salaryMin   Int?
+  salaryMax   Int?
+  location    String   @default("")
+  remote      Boolean  @default(false)
+  notes       String   @default("")
+  appliedAt   DateTime @default(now())
+  respondedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, status])
 }

@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   CalendarDays,
   BarChart3,
+  BriefcaseBusiness,
   ListChecks,
   Heart,
   Settings,
@@ -21,6 +22,7 @@ import ThemeToggle from "@/components/layout/ThemeToggle";
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
+  { href: "/jobs", label: "Jobs", icon: BriefcaseBusiness },
   { href: "/habits", label: "Habits", icon: ListChecks },
   { href: "/stats", label: "Stats", icon: BarChart3 },
   { href: "/health", label: "Health", icon: Heart },

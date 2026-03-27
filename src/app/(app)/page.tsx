@@ -10,6 +10,7 @@ import DayNavigation from "@/components/dashboard/DayNavigation";
 import CompletionHeatmap from "@/components/dashboard/CompletionHeatmap";
 import HealthSummaryPanel from "@/components/dashboard/HealthSummaryPanel";
 import GmailInboxPanel from "@/components/dashboard/GmailInboxPanel";
+import JobTrackerPanel from "@/components/dashboard/JobTrackerPanel";
 import TaskList from "@/components/dashboard/TaskList";
 import HabitChecklist from "@/components/dashboard/HabitChecklist";
 
@@ -230,8 +231,10 @@ function DashboardContent() {
               summaries={insights?.health.summaries ?? []}
               error={insightsError ?? insights?.health.error}
             />
-            <GmailInboxPanel />
+            <JobTrackerPanel />
           </div>
+
+          <GmailInboxPanel />
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr,0.9fr]">
             <Card>
