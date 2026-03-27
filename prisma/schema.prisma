@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  dayEntries   DayEntry[]
+  tasks        Task[]
+  habits       Habit[]
+  categories     Category[]
+  recurringTasks RecurringTask[]
+  fitbitToken    FitbitToken?
+  gmailToken     GmailToken?
+}
+
+model DayEntry {
+  id          String   @id @default(cuid())
+  userId      String
+  date        String   // YYYY-MM-DD format
+  journalText String   @default("")
+  mood        Int?     // 1-5 scale
+  energy      Int?     // 1-5 scale
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks Task[]
+
+  @@unique([userId, date])
+  @@index([userId])
+}
+
+model Category {
+  id     String @id @default(cuid())
+  userId String
+  name   String
+  color  String @default("#6366f1")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tasks          Task[]
+  habits         Habit[]
+  recurringTasks RecurringTask[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model Task {
+  id               String        @id @default(cuid())
+  userId           String
+  dayEntryId       String
+  title            String
+  description      String        @default("")
+  completed        Boolean       @default(false)
+  priority         String        @default("medium")
+  position         Int           @default(0)
+  categoryId       String?
+  startTime        String?
+  endTime          String?
+  estimatedMinutes Int?
+  durationMinutes  Int?
+  timerStatus      String        @default("idle")
+  timerStartedAt   DateTime?
+  timerEndsAt      DateTime?
+  timerOutcome     String?
+  completionNote   String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayEntry  DayEntry      @relation(fields: [dayEntryId], references: [id], onDelete: Cascade)
+  category  Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  subitems  TaskSubitem[]
+
+  @@index([userId])
+  @@index([dayEntryId])
+}
+
+model TaskSubitem {
+  id        String   @id @default(cuid())
+  taskId     String
+  title      String
+  completed  Boolean  @default(false)
+  position   Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+}
+
+model Habit {
+  id         String     @id @default(cuid())
+  userId     String
+  name       String
+  color      String     @default("#6366f1")
+  frequency  String     @default("daily")
+  active     Boolean    @default(true)
+  categoryId String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  logs     HabitLog[]
+
+  @@index([userId])
+}
+
+model HabitLog {
+  id        String   @id @default(cuid())
+  habitId   String
+  date      String   // YYYY-MM-DD
+  completed Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+  @@index([habitId])
+}
+
+model RecurringTask {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String   @default("")
+  priority    String   @default("medium")
+  frequency   String   @default("daily") // daily, weekdays, weekends
+  active      Boolean  @default(true)
+  categoryId  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+}
+
+model FitbitToken {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  fitbitUserId String
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  scopes       String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model GmailToken {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  email        String   @default("")
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  scopes       String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model FitbitDailyCache {
+  id               String   @id @default(cuid())
+  userId           String
+  date             String   // YYYY-MM-DD
+  steps            Int?
+  distance         Float?
+  floors           Int?
+  caloriesOut      Int?
+  caloriesBMR      Int?
+  activeCalories   Int?
+  lightlyActiveMins Int?
+  fairlyActiveMins  Int?
+  veryActiveMins    Int?
+  sedentaryMins     Int?
+  stepGoal         Int?
+  restingHeartRate Int?
+  sleepMinutes     Int?
+  sleepTimeInBed   Int?
+  sleepEfficiency  Int?
+  sleepDeep        Int?
+  sleepLight       Int?
+  sleepRem         Int?
+  sleepWake        Int?
+  weight           Float?
+  bmi              Float?
+  fetchedAt        DateTime @default(now())
+
+  @@unique([userId, date])
+  @@index([userId])
+}
+
+model GmailCache {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  data      String   // JSON-serialized email list
+  fetchedAt DateTime @default(now())
+
+  @@index([userId])
+}

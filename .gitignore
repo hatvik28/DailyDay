@@ -1,0 +1,46 @@
+# Dependencies
+/node_modules
+
+# Next.js
+/.next/
+/out/
+/build
+
+# Environment & secrets
+.env
+.env*.local
+
+# Database
+prisma/dev.db
+prisma/dev.db-journal
+*.db
+*.db-journal
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Prisma generated client
+src/generated/
+
+# Claude Code
+.claude/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+*.pem
+
+# Debug & logs
+npm-debug.log*
+.next-dev*.log
+
+# Temp test files
+.tmp-tests/
+
+# Turbopack
+.turbo/

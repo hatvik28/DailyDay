@@ -1,0 +1,5 @@
+ALTER TABLE "Task" ADD COLUMN "durationMinutes" INTEGER;
+ALTER TABLE "Task" ADD COLUMN "timerStatus" TEXT NOT NULL DEFAULT 'idle';
+ALTER TABLE "Task" ADD COLUMN "timerStartedAt" DATETIME;
+ALTER TABLE "Task" ADD COLUMN "timerEndsAt" DATETIME;
+ALTER TABLE "Task" ADD COLUMN "timerOutcome" TEXT;
