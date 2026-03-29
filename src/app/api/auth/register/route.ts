@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { registerLimiter, getClientIp } from "@/lib/rate-limit";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -9,8 +10,18 @@ function jsonError(message: string, status: number) {
   return NextResponse.json({ error: message }, { status });
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request);
+    try {
+      await registerLimiter.consume(ip);
+    } catch {
+      return NextResponse.json(
+        { error: "Too many registration attempts. Please try again later." },
+        { status: 429, headers: { "Retry-After": "3600" } }
+      );
+    }
+
     let body: unknown;
     try {
       body = await request.json();
@@ -40,8 +51,8 @@ export async function POST(request: Request) {
     if (!passwordStr) {
       return jsonError("Password is required.", 400);
     }
-    if (passwordStr.length < 6) {
-      return jsonError("Password must be at least 6 characters.", 400);
+    if (passwordStr.length < 8) {
+      return jsonError("Password must be at least 8 characters.", 400);
     }
 
     const passwordHash = await bcrypt.hash(passwordStr, 10);
