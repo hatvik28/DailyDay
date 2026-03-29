@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getRequiredUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { validateJobApplication, isValidJobStatus } from "@/lib/job-applications";
+import { validateJobApplication, isValidJobStatus, type JobApplicationInput } from "@/lib/job-applications";
 
 export async function GET(request: Request) {
   try {
@@ -41,7 +41,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
+    let body: JobApplicationInput;
+    try {
+      body = await request.json() as JobApplicationInput;
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
     const validationError = validateJobApplication(body);
     if (validationError) {
       return NextResponse.json({ error: validationError }, { status: 400 });
@@ -50,8 +55,8 @@ export async function POST(request: Request) {
     const application = await prisma.jobApplication.create({
       data: {
         userId: user.id!,
-        company: body.company.trim(),
-        role: body.role.trim(),
+        company: body.company!.trim(),
+        role: body.role!.trim(),
         status: body.status ?? "applied",
         url: body.url?.trim() ?? "",
         salaryMin: body.salaryMin ?? null,

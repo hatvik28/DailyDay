@@ -146,7 +146,12 @@ export default function JobsPage() {
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
-      await fetch(`/api/job-applications/${deleteTarget.id}`, { method: "DELETE" });
+      const response = await fetch(`/api/job-applications/${deleteTarget.id}`, { method: "DELETE" });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({})) as { error?: string };
+        alert(data.error ?? "Failed to delete application");
+        return;
+      }
       setDeleteTarget(null);
       await loadApplications();
     } catch (error) {
@@ -156,11 +161,16 @@ export default function JobsPage() {
 
   const handleStatusChange = async (app: JobApplication, newStatus: string) => {
     try {
-      await fetch(`/api/job-applications/${app.id}`, {
+      const response = await fetch(`/api/job-applications/${app.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
       });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({})) as { error?: string };
+        console.error("Failed to update status:", data.error);
+        return;
+      }
       await loadApplications();
     } catch (error) {
       console.error("Failed to update status:", error);
@@ -339,16 +349,18 @@ function ApplicationForm({
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-sm font-medium">Company *</label>
+          <label htmlFor="company" className="mb-1 block text-sm font-medium">Company *</label>
           <Input
+            id="company"
             value={form.company}
             onChange={(e) => setForm({ ...form, company: e.target.value })}
             placeholder="Google"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium">Role *</label>
+          <label htmlFor="role" className="mb-1 block text-sm font-medium">Role *</label>
           <Input
+            id="role"
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value })}
             placeholder="Software Engineer"
@@ -357,8 +369,9 @@ function ApplicationForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium">Status</label>
+        <label htmlFor="status" className="mb-1 block text-sm font-medium">Status</label>
         <select
+          id="status"
           value={form.status}
           onChange={(e) => setForm({ ...form, status: e.target.value })}
           className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
@@ -370,8 +383,9 @@ function ApplicationForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium">Job URL</label>
+        <label htmlFor="url" className="mb-1 block text-sm font-medium">Job URL</label>
         <Input
+          id="url"
           value={form.url}
           onChange={(e) => setForm({ ...form, url: e.target.value })}
           placeholder="https://..."
@@ -380,8 +394,9 @@ function ApplicationForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-sm font-medium">Salary Min</label>
+          <label htmlFor="salaryMin" className="mb-1 block text-sm font-medium">Salary Min</label>
           <Input
+            id="salaryMin"
             type="number"
             value={form.salaryMin}
             onChange={(e) => setForm({ ...form, salaryMin: e.target.value })}
@@ -389,8 +404,9 @@ function ApplicationForm({
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium">Salary Max</label>
+          <label htmlFor="salaryMax" className="mb-1 block text-sm font-medium">Salary Max</label>
           <Input
+            id="salaryMax"
             type="number"
             value={form.salaryMax}
             onChange={(e) => setForm({ ...form, salaryMax: e.target.value })}
@@ -401,16 +417,18 @@ function ApplicationForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-sm font-medium">Location</label>
+          <label htmlFor="location" className="mb-1 block text-sm font-medium">Location</label>
           <Input
+            id="location"
             value={form.location}
             onChange={(e) => setForm({ ...form, location: e.target.value })}
             placeholder="San Francisco, CA"
           />
         </div>
         <div className="flex items-end pb-1">
-          <label className="flex items-center gap-2 text-sm">
+          <label htmlFor="remote" className="flex items-center gap-2 text-sm">
             <input
+              id="remote"
               type="checkbox"
               checked={form.remote}
               onChange={(e) => setForm({ ...form, remote: e.target.checked })}
@@ -422,8 +440,9 @@ function ApplicationForm({
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium">Notes</label>
+        <label htmlFor="notes" className="mb-1 block text-sm font-medium">Notes</label>
         <Textarea
+          id="notes"
           value={form.notes}
           onChange={(e) => setForm({ ...form, notes: e.target.value })}
           placeholder="Referred by..., need to prep for..."
@@ -485,6 +504,7 @@ function TableView({
                           href={app.url}
                           target="_blank"
                           rel="noopener noreferrer"
+                          aria-label={`Open ${app.company} job posting`}
                           className="text-muted-foreground hover:text-foreground"
                         >
                           <ExternalLink className="size-3.5" />
@@ -556,10 +576,10 @@ function PipelineView({
   onEdit: (app: JobApplication) => void;
   onStatusChange: (app: JobApplication, status: string) => void;
 }) {
-  const columns = PIPELINE_ORDER.filter((s) => s !== "withdrawn");
+  const columns = PIPELINE_ORDER;
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-5">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
       {columns.map((status) => {
         const columnApps = applications.filter((a) => a.status === status);
         return (
@@ -585,7 +605,8 @@ function PipelineView({
                       </p>
                     )}
                     <div className="mt-2 flex gap-1">
-                      {PIPELINE_ORDER.filter((s) => s !== "withdrawn" && s !== status)
+                      {PIPELINE_ORDER.slice(PIPELINE_ORDER.indexOf(status as JobStatus) + 1)
+                        .filter((s) => s !== "withdrawn")
                         .slice(0, 2)
                         .map((nextStatus) => (
                           <button

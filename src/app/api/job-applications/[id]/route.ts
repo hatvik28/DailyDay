@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getRequiredUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { validateJobApplication } from "@/lib/job-applications";
+import { validateJobApplication, type JobApplicationInput } from "@/lib/job-applications";
 
 export async function PUT(
   request: Request,
@@ -16,7 +16,12 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const body = await request.json();
+    let body: JobApplicationInput;
+    try {
+      body = await request.json() as JobApplicationInput;
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
     const validationError = validateJobApplication({
       company: body.company ?? "placeholder",
       role: body.role ?? "placeholder",

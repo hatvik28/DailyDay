@@ -116,6 +116,7 @@ export default function JobTrackerPanel() {
                           href={app.url}
                           target="_blank"
                           rel="noopener noreferrer"
+                          aria-label={`Open ${app.company} job posting`}
                           className="text-muted-foreground hover:text-foreground"
                         >
                           <ExternalLink className="size-3" />

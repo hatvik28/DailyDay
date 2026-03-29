@@ -57,18 +57,41 @@ export interface JobApplicationInput {
   remote?: boolean;
   notes?: string;
   appliedAt?: string;
+  respondedAt?: string;
 }
 
 export function validateJobApplication(input: JobApplicationInput): string | null {
   if (!input.company?.trim()) return "Company is required";
+  if (typeof input.company !== "string") return "Company must be a string";
   if (!input.role?.trim()) return "Role is required";
+  if (typeof input.role !== "string") return "Role must be a string";
+  if (input.status !== undefined && typeof input.status !== "string") return "Status must be a string";
   if (input.status && !isValidJobStatus(input.status)) {
     return `Invalid status. Must be one of: ${JOB_STATUSES.join(", ")}`;
   }
-  if (input.salaryMin != null && input.salaryMin < 0) return "Salary minimum cannot be negative";
-  if (input.salaryMax != null && input.salaryMax < 0) return "Salary maximum cannot be negative";
+  if (input.url !== undefined && typeof input.url !== "string") return "URL must be a string";
+  if (input.location !== undefined && typeof input.location !== "string") return "Location must be a string";
+  if (input.notes !== undefined && typeof input.notes !== "string") return "Notes must be a string";
+  if (input.remote !== undefined && typeof input.remote !== "boolean") return "Remote must be a boolean";
+  if (input.salaryMin != null) {
+    if (typeof input.salaryMin !== "number" || !Number.isFinite(input.salaryMin)) {
+      return "Salary minimum must be a finite number";
+    }
+    if (input.salaryMin < 0) return "Salary minimum cannot be negative";
+  }
+  if (input.salaryMax != null) {
+    if (typeof input.salaryMax !== "number" || !Number.isFinite(input.salaryMax)) {
+      return "Salary maximum must be a finite number";
+    }
+    if (input.salaryMax < 0) return "Salary maximum cannot be negative";
+  }
   if (input.salaryMin != null && input.salaryMax != null && input.salaryMin > input.salaryMax) {
     return "Salary minimum cannot exceed maximum";
+  }
+  if (input.appliedAt !== undefined) {
+    if (typeof input.appliedAt !== "string" || Number.isNaN(Date.parse(input.appliedAt))) {
+      return "appliedAt must be a valid ISO date string";
+    }
   }
   return null;
 }
