@@ -61,7 +61,7 @@ function sortTasks(tasks: Task[]) {
 export default function TaskList({
   date,
   tasks,
-  categories,
+  categories: _categories,
   onTasksChange,
   onMutationComplete,
 }: TaskListProps) {

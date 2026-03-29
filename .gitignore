@@ -42,5 +42,8 @@ npm-debug.log*
 # Temp test files
 .tmp-tests/
 
+# Test coverage
+coverage/
+
 # Turbopack
 .turbo/

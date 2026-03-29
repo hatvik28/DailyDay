@@ -12,13 +12,6 @@ import { getFitbitHealthData, type FitbitHealthData } from "@/lib/fitbit";
 
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
-interface CachedFitbitDay {
-  activity: FitbitHealthData["activity"];
-  heartRate: FitbitHealthData["heartRate"];
-  sleep: FitbitHealthData["sleep"];
-  weight: FitbitHealthData["weight"];
-}
-
 /**
  * Return cached Fitbit data for a single day, or fetch + cache if stale/missing.
  */
