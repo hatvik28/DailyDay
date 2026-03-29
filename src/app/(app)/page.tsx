@@ -84,7 +84,7 @@ interface DashboardInsights {
 function DashboardContent() {
   const searchParams = useSearchParams();
   const [currentDate, setCurrentDate] = useState(() => formatDateKey(new Date()));
-  const [dayEntry, setDayEntry] = useState<DayEntry | null>(null);
+  const [_dayEntry, setDayEntry] = useState<DayEntry | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [habits, setHabits] = useState<Habit[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
