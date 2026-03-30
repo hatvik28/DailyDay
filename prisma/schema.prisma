@@ -19,9 +19,11 @@ model User {
   habits       Habit[]
   categories     Category[]
   recurringTasks RecurringTask[]
-  fitbitToken      FitbitToken?
-  gmailToken       GmailToken?
-  jobApplications  JobApplication[]
+  fitbitToken       FitbitToken?
+  gmailToken        GmailToken?
+  jobApplications   JobApplication[]
+  fitbitDailyCache  FitbitDailyCache[]
+  gmailCache        GmailCache?
 }
 
 model DayEntry {
@@ -204,6 +206,8 @@ model FitbitDailyCache {
   bmi              Float?
   fetchedAt        DateTime @default(now())
 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([userId, date])
   @@index([userId])
 }
@@ -214,7 +218,7 @@ model GmailCache {
   data      String   // JSON-serialized email list
   fetchedAt DateTime @default(now())
 
-  @@index([userId])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model JobApplication {
