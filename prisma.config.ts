@@ -1,15 +1,13 @@
 import { defineConfig } from "prisma/config";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL environment variable is required. See .env.example for setup.");
-}
-
 export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env.DATABASE_URL,
+    // Placeholder allows `prisma generate` to run in CI without a real DB.
+    // Migrations and runtime queries still require a real DATABASE_URL.
+    url: process.env.DATABASE_URL ?? "postgresql://placeholder:placeholder@localhost:5432/placeholder",
   },
 });
