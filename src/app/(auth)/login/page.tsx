@@ -57,7 +57,11 @@ function LoginForm() {
       }
 
       if (result.error) {
-        setError("Invalid email or password.");
+        if (result.code === "rate_limited") {
+          setError("Too many login attempts. Please try again in 15 minutes.");
+        } else {
+          setError("Invalid email or password.");
+        }
         return;
       }
 

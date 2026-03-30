@@ -20,10 +20,20 @@ export const registerLimiter = new RateLimiterMemory({
   duration: 60 * 60,
 });
 
-/** Extracts the client IP from request headers. */
+/**
+ * Extracts the client IP from request headers.
+ *
+ * Prefers x-real-ip (set by reverse proxies like Vercel/Nginx) over
+ * x-forwarded-for. When x-forwarded-for is used, takes the leftmost
+ * entry (the original client). Falls back to "unknown" so requests
+ * without either header don't silently share a single rate-limit bucket.
+ */
 export function getClientIp(request: Request): string {
-  return (
-    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-    "127.0.0.1"
-  );
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) return realIp.trim();
+
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) return forwardedFor.split(",")[0].trim();
+
+  return "unknown";
 }

@@ -1,7 +1,11 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
 import { loginLimiter, getClientIp } from "./rate-limit";
+
+class RateLimitError extends CredentialsSignin {
+  code = "rate_limited";
+}
 
 const nextAuth = NextAuth({
   ...authConfig,
@@ -17,7 +21,7 @@ const nextAuth = NextAuth({
         try {
           await loginLimiter.consume(ip);
         } catch {
-          throw new Error("Too many login attempts. Please try again in 15 minutes.");
+          throw new RateLimitError();
         }
 
         if (!credentials?.email || !credentials?.password) {
