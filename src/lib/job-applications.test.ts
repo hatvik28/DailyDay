@@ -68,6 +68,18 @@ describe("validateJobApplication", () => {
       validateJobApplication({ company: "Google", role: "SWE", salaryMin: 100000, salaryMax: 200000 })
     ).toBeNull();
   });
+
+  it("rejects invalid respondedAt", () => {
+    expect(
+      validateJobApplication({ company: "Google", role: "SWE", respondedAt: "not-a-date" })
+    ).toBe("respondedAt must be a valid ISO date string");
+  });
+
+  it("accepts valid respondedAt", () => {
+    expect(
+      validateJobApplication({ company: "Google", role: "SWE", respondedAt: "2026-03-15" })
+    ).toBeNull();
+  });
 });
 
 describe("computeJobStats", () => {

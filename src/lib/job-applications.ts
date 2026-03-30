@@ -93,6 +93,11 @@ export function validateJobApplication(input: JobApplicationInput): string | nul
       return "appliedAt must be a valid ISO date string";
     }
   }
+  if (input.respondedAt !== undefined) {
+    if (typeof input.respondedAt !== "string" || Number.isNaN(Date.parse(input.respondedAt))) {
+      return "respondedAt must be a valid ISO date string";
+    }
+  }
   return null;
 }
 
