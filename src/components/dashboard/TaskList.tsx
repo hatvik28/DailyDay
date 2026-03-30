@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { GripVertical, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,14 +66,16 @@ export default function TaskList({
   onMutationComplete,
 }: TaskListProps) {
   const [taskState, setTaskState] = useState<Task[]>(tasks);
+  const [prevTasks, setPrevTasks] = useState<Task[]>(tasks);
   const [newTitle, setNewTitle] = useState("");
   const [adding, setAdding] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
 
-  useEffect(() => {
+  if (tasks !== prevTasks) {
+    setPrevTasks(tasks);
     setTaskState(tasks);
-  }, [tasks]);
+  }
 
   const commitTasks = useCallback(
     (nextTasks: Task[]) => {
