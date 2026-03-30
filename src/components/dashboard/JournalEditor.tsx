@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
@@ -12,14 +12,16 @@ interface JournalEditorProps {
 
 export default function JournalEditor({ date, journalText, onUpdate }: JournalEditorProps) {
   const [text, setText] = useState(journalText);
+  const [prevJournalText, setPrevJournalText] = useState(journalText);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">("idle");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedRef = useRef(journalText);
 
-  useEffect(() => {
+  if (journalText !== prevJournalText) {
+    setPrevJournalText(journalText);
     setText(journalText);
     lastSavedRef.current = journalText;
-  }, [journalText]);
+  }
 
   const save = useCallback(
     async (value: string) => {
