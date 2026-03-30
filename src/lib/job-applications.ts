@@ -3,6 +3,8 @@
  * Business logic layer — no Prisma or API concerns.
  */
 
+import { isValidISODate } from "./utils";
+
 export const JOB_STATUSES = [
   "applied",
   "phone_screen",
@@ -89,12 +91,12 @@ export function validateJobApplication(input: JobApplicationInput): string | nul
     return "Salary minimum cannot exceed maximum";
   }
   if (input.appliedAt !== undefined) {
-    if (typeof input.appliedAt !== "string" || Number.isNaN(Date.parse(input.appliedAt))) {
+    if (typeof input.appliedAt !== "string" || !isValidISODate(input.appliedAt)) {
       return "appliedAt must be a valid ISO date string";
     }
   }
   if (input.respondedAt !== undefined) {
-    if (typeof input.respondedAt !== "string" || Number.isNaN(Date.parse(input.respondedAt))) {
+    if (typeof input.respondedAt !== "string" || !isValidISODate(input.respondedAt)) {
       return "respondedAt must be a valid ISO date string";
     }
   }

@@ -80,6 +80,18 @@ describe("validateJobApplication", () => {
       validateJobApplication({ company: "Google", role: "SWE", respondedAt: "2026-03-15" })
     ).toBeNull();
   });
+
+  it("rejects parseable but non-ISO respondedAt", () => {
+    expect(
+      validateJobApplication({ company: "Google", role: "SWE", respondedAt: "Mar 15 2026" })
+    ).toBe("respondedAt must be a valid ISO date string");
+  });
+
+  it("rejects impossible calendar date for respondedAt", () => {
+    expect(
+      validateJobApplication({ company: "Google", role: "SWE", respondedAt: "2026-02-30" })
+    ).toBe("respondedAt must be a valid ISO date string");
+  });
 });
 
 describe("computeJobStats", () => {
