@@ -92,12 +92,12 @@ export function validateJobApplication(input: JobApplicationInput): string | nul
   }
   if (input.appliedAt !== undefined) {
     if (typeof input.appliedAt !== "string" || !isValidISODate(input.appliedAt)) {
-      return "appliedAt must be a valid ISO date string";
+      return "appliedAt must be a valid ISO date (YYYY-MM-DD)";
     }
   }
   if (input.respondedAt !== undefined) {
     if (typeof input.respondedAt !== "string" || !isValidISODate(input.respondedAt)) {
-      return "respondedAt must be a valid ISO date string";
+      return "respondedAt must be a valid ISO date (YYYY-MM-DD)";
     }
   }
   return null;

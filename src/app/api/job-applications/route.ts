@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseISO } from "date-fns";
 import { getRequiredUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { validateJobApplication, isValidJobStatus, type JobApplicationInput } from "@/lib/job-applications";
@@ -64,7 +65,7 @@ export async function POST(request: Request) {
         location: body.location?.trim() ?? "",
         remote: body.remote ?? false,
         notes: body.notes?.trim() ?? "",
-        appliedAt: body.appliedAt ? new Date(body.appliedAt) : new Date(),
+        appliedAt: body.appliedAt ? parseISO(body.appliedAt) : new Date(),
       },
     });
 

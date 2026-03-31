@@ -43,10 +43,10 @@ Copy the example environment file and fill in your values:
 cp .env.example .env
 ```
 
-Push the database schema and optionally seed data:
+Apply migrations and optionally seed data:
 
 ```bash
-npm run db:push
+npx prisma migrate dev
 npm run db:seed
 ```
 
