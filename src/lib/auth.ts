@@ -7,6 +7,18 @@ class RateLimitError extends CredentialsSignin {
   code = "rate_limited";
 }
 
+/** Consume an extra rate-limit point to penalise failed credentials. */
+async function penaliseFailedAttempt(ip: string): Promise<null> {
+  try {
+    await loginLimiter.consume(ip);
+  } catch (error: unknown) {
+    // RateLimiterRes (quota exhausted) is expected — swallow it.
+    // Real errors (e.g. Postgres connection failure) must surface.
+    if (error instanceof Error) throw error;
+  }
+  return null;
+}
+
 const nextAuth = NextAuth({
   ...authConfig,
   providers: [
@@ -43,12 +55,12 @@ const nextAuth = NextAuth({
         });
 
         if (!user) {
-          return null;
+          return penaliseFailedAttempt(ip);
         }
 
         const passwordMatch = await bcrypt.compare(password, user.passwordHash);
         if (!passwordMatch) {
-          return null;
+          return penaliseFailedAttempt(ip);
         }
 
         return {
