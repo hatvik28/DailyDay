@@ -1,72 +1,94 @@
 import { Pool } from "pg";
 import { RateLimiterPostgres, RateLimiterMemory } from "rate-limiter-flexible";
+import {
+  LOGIN_LIMIT_DURATION,
+  LOGIN_LIMIT_POINTS,
+  REGISTER_LIMIT_DURATION,
+  REGISTER_LIMIT_POINTS,
+} from "./rate-limit-config";
 
-/** Duration (in seconds) for the login rate-limit window. */
-export const LOGIN_LIMIT_DURATION = 15 * 60;
+export {
+  LOGIN_LIMIT_DURATION,
+  LOGIN_LIMIT_POINTS,
+  REGISTER_LIMIT_DURATION,
+  REGISTER_LIMIT_POINTS,
+} from "./rate-limit-config";
 
-/** Maximum login attempts allowed per IP within the window. */
-export const LOGIN_LIMIT_POINTS = 5;
+const globalStore = globalThis as unknown as {
+  __rateLimitPool?: Pool;
+  __loginLimiter?: RateLimiterPostgres;
+  __registerLimiter?: RateLimiterPostgres;
+};
 
-/** Duration (in seconds) for the registration rate-limit window. */
-export const REGISTER_LIMIT_DURATION = 60 * 60;
-
-/** Maximum registrations allowed per IP within the window. */
-export const REGISTER_LIMIT_POINTS = 3;
-
-function createPool(): Pool {
-  if (!process.env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is required for rate limiting.");
+function getPool(): Pool {
+  if (!globalStore.__rateLimitPool) {
+    if (!process.env.DATABASE_URL) {
+      throw new Error("DATABASE_URL is required for rate limiting.");
+    }
+    globalStore.__rateLimitPool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+    });
   }
-  return new Pool({ connectionString: process.env.DATABASE_URL });
+  return globalStore.__rateLimitPool;
 }
 
-const globalStore = globalThis as unknown as { __rateLimitPool?: Pool };
+function getLoginLimiter(): RateLimiterPostgres {
+  if (!globalStore.__loginLimiter) {
+    globalStore.__loginLimiter = new RateLimiterPostgres({
+      storeClient: getPool(),
+      points: LOGIN_LIMIT_POINTS,
+      duration: LOGIN_LIMIT_DURATION,
+      keyPrefix: "login",
+      tableName: "rate_limits",
+      insuranceLimiter: new RateLimiterMemory({
+        points: LOGIN_LIMIT_POINTS,
+        duration: LOGIN_LIMIT_DURATION,
+      }),
+    });
+  }
+  return globalStore.__loginLimiter;
+}
 
-const pgPool = new Proxy({} as Pool, {
-  get(_target, prop, receiver) {
-    const pool = (globalStore.__rateLimitPool ??= createPool());
-    const value = Reflect.get(pool, prop, receiver);
-    return typeof value === "function" ? value.bind(pool) : value;
-  },
-});
-
-const fallbackLogin = new RateLimiterMemory({
-  points: LOGIN_LIMIT_POINTS,
-  duration: LOGIN_LIMIT_DURATION,
-});
-
-const fallbackRegister = new RateLimiterMemory({
-  points: REGISTER_LIMIT_POINTS,
-  duration: REGISTER_LIMIT_DURATION,
-});
+function getRegisterLimiter(): RateLimiterPostgres {
+  if (!globalStore.__registerLimiter) {
+    globalStore.__registerLimiter = new RateLimiterPostgres({
+      storeClient: getPool(),
+      points: REGISTER_LIMIT_POINTS,
+      duration: REGISTER_LIMIT_DURATION,
+      keyPrefix: "register",
+      tableName: "rate_limits",
+      insuranceLimiter: new RateLimiterMemory({
+        points: REGISTER_LIMIT_POINTS,
+        duration: REGISTER_LIMIT_DURATION,
+      }),
+    });
+  }
+  return globalStore.__registerLimiter;
+}
 
 /**
  * Rate limiter for login attempts.
  * Allows 5 attempts per IP per 15 minutes.
  * Backed by Postgres so limits persist across serverless invocations.
+ * Lazily initialized to avoid importing pg at build time.
  */
-export const loginLimiter = new RateLimiterPostgres({
-  storeClient: pgPool,
-  points: LOGIN_LIMIT_POINTS,
-  duration: LOGIN_LIMIT_DURATION,
-  keyPrefix: "login",
-  tableName: "rate_limits",
-  insuranceLimiter: fallbackLogin,
-});
+export const loginLimiter = {
+  consume(key: string, pointsToConsume?: number) {
+    return getLoginLimiter().consume(key, pointsToConsume);
+  },
+};
 
 /**
  * Rate limiter for account registration.
  * Allows 3 registrations per IP per hour.
  * Backed by Postgres so limits persist across serverless invocations.
+ * Lazily initialized to avoid importing pg at build time.
  */
-export const registerLimiter = new RateLimiterPostgres({
-  storeClient: pgPool,
-  points: REGISTER_LIMIT_POINTS,
-  duration: REGISTER_LIMIT_DURATION,
-  keyPrefix: "register",
-  tableName: "rate_limits",
-  insuranceLimiter: fallbackRegister,
-});
+export const registerLimiter = {
+  consume(key: string, pointsToConsume?: number) {
+    return getRegisterLimiter().consume(key, pointsToConsume);
+  },
+};
 
 /**
  * Extracts the client IP from request headers.
