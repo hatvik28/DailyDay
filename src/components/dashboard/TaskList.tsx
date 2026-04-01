@@ -232,12 +232,9 @@ export default function TaskList({
           onDragEnd={() => setDraggingId(null)}
         >
           <div className="flex items-center gap-3">
-            <button
-              aria-label="Drag to reorder task"
-              className="rounded-md border border-border p-1 text-muted-foreground hover:text-foreground"
-            >
-              <GripVertical aria-hidden="true" className="size-4" />
-            </button>
+            <span aria-hidden="true" className="rounded-md border border-border p-1 text-muted-foreground hover:text-foreground">
+              <GripVertical className="size-4" />
+            </span>
             <div className="min-w-0 flex-1">
               <span className={cn("block text-sm font-medium", task.completed && "text-muted-foreground line-through")}>
                 {task.title}

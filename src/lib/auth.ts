@@ -11,8 +11,10 @@ class RateLimitError extends CredentialsSignin {
 async function penaliseFailedAttempt(ip: string): Promise<null> {
   try {
     await loginLimiter.consume(ip);
-  } catch {
-    /* already exhausted — next attempt will surface the rate-limit error */
+  } catch (error: unknown) {
+    // RateLimiterRes (quota exhausted) is expected — swallow it.
+    // Real errors (e.g. Postgres connection failure) must surface.
+    if (error instanceof Error) throw error;
   }
   return null;
 }
