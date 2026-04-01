@@ -67,7 +67,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run lint` | Run ESLint |
 | `npm test` | Run tests |
 | `npm run test:coverage` | Tests with coverage |
-| `npm run db:push` | Push Prisma schema to database |
+| `npm run db:push` | Push schema to DB (prototyping only — use `npx prisma migrate dev` for migrations) |
 | `npm run db:studio` | Open Prisma Studio |
 
 ## CI
