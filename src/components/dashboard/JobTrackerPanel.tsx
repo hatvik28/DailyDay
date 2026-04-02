@@ -23,7 +23,11 @@ interface JobApplication {
   appliedAt: string;
 }
 
-export default function JobTrackerPanel() {
+interface JobTrackerPanelProps {
+  className?: string;
+}
+
+export default function JobTrackerPanel({ className }: JobTrackerPanelProps) {
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -49,7 +53,7 @@ export default function JobTrackerPanel() {
   const recent = applications.slice(0, 5);
 
   return (
-    <Card>
+    <Card className={cn("flex flex-col", className)}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -67,7 +71,7 @@ export default function JobTrackerPanel() {
           {stats.total} applications · {stats.responseRate}% response rate
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="min-h-0 flex-1 overflow-y-auto">
         {loading ? (
           <div className="flex justify-center py-6">
             <Loader2 className="size-5 animate-spin text-muted-foreground" />

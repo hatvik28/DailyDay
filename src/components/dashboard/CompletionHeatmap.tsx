@@ -27,16 +27,27 @@ function chunk<T>(items: T[], size: number) {
   return chunks;
 }
 
-export default function CompletionHeatmap({ cells }: { cells: HeatmapCell[] }) {
+interface CompletionHeatmapProps {
+  cells: HeatmapCell[];
+  className?: string;
+  insightsLoading?: boolean;
+}
+
+export default function CompletionHeatmap({ cells, className, insightsLoading }: CompletionHeatmapProps) {
   const columns = chunk(cells, 7);
 
   return (
-    <Card>
+    <Card className={cn("flex flex-col", className)}>
       <CardHeader>
-        <CardTitle>Completion heatmap</CardTitle>
+        <div className="flex items-center justify-between gap-3">
+          <CardTitle>Completion heatmap</CardTitle>
+          {insightsLoading && (
+            <span className="text-xs text-muted-foreground">Refreshing…</span>
+          )}
+        </div>
         <CardDescription>Last 12 weeks of daily task completion</CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="min-h-0 flex-1 space-y-4 overflow-x-auto">
         <div className="overflow-x-auto">
           <div className="flex min-w-max gap-1.5">
             {columns.map((column, columnIndex) => (

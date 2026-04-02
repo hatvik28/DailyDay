@@ -195,7 +195,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <DayNavigation date={currentDate} onDateChange={setCurrentDate} />
 
       {loading ? (
@@ -204,14 +204,15 @@ function DashboardContent() {
         </div>
       ) : (
         <>
-          <section className="space-y-2">
+          {/* Progress bar */}
+          <section className="space-y-1.5">
             <div className="flex items-center justify-between gap-3 text-sm">
               <span className="font-medium text-foreground">Daily progress</span>
               <span className="text-muted-foreground">
                 {progress.completed}/{progress.total} tasks · {progress.percent}%
               </span>
             </div>
-            <div className="h-3 overflow-hidden rounded-full border border-border bg-muted">
+            <div className="h-2.5 overflow-hidden rounded-full border border-border bg-muted">
               <div className="flex h-full w-full">
                 <div
                   className="h-full bg-emerald-500 transition-[width]"
@@ -225,57 +226,70 @@ function DashboardContent() {
             </div>
           </section>
 
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.15fr,0.85fr]">
-            <HealthSummaryPanel
-              connected={insights?.health.connected ?? false}
-              summaries={insights?.health.summaries ?? []}
-              error={insightsError ?? insights?.health.error}
-            />
-            <JobTrackerPanel />
-          </div>
-
-          <GmailInboxPanel />
-
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr,0.9fr]">
-            <Card>
-              <CardHeader>
-                <CardTitle>Tasks</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TaskList
-                  date={currentDate}
-                  tasks={tasks}
-                  categories={categories}
-                  onTasksChange={setTasks}
-                  onMutationComplete={handleBackgroundRefresh}
-                />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Habits</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <HabitChecklist
-                  date={currentDate}
-                  habits={habits}
-                  onHabitsChange={setHabits}
-                />
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold tracking-tight text-foreground">
-                Completion history
-              </h2>
-              {insightsLoading && (
-                <span className="text-xs text-muted-foreground">Refreshing insights…</span>
-              )}
+          {/* Bento grid */}
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-6 lg:grid-rows-[1fr_1fr_auto] xl:grid-cols-12 xl:grid-rows-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:h-[calc(100vh-9rem)]">
+            {/* Tasks — tall left */}
+            <div className="min-h-[300px] lg:col-span-3 lg:row-span-2 xl:col-span-3 xl:row-span-2">
+              <Card className="flex h-full flex-col">
+                <CardHeader>
+                  <CardTitle>Tasks</CardTitle>
+                </CardHeader>
+                <CardContent className="min-h-0 flex-1 overflow-y-auto">
+                  <TaskList
+                    date={currentDate}
+                    tasks={tasks}
+                    categories={categories}
+                    onTasksChange={setTasks}
+                    onMutationComplete={handleBackgroundRefresh}
+                  />
+                </CardContent>
+              </Card>
             </div>
-            <CompletionHeatmap cells={insights?.heatmap ?? []} />
+
+            {/* Gmail */}
+            <div className="min-h-[200px] lg:col-span-3 xl:col-span-3">
+              <GmailInboxPanel className="h-full" />
+            </div>
+
+            {/* Health */}
+            <div className="min-h-[200px] lg:col-span-3 xl:col-span-3">
+              <HealthSummaryPanel
+                className="h-full"
+                connected={insights?.health.connected ?? false}
+                summaries={insights?.health.summaries ?? []}
+                error={insightsError ?? insights?.health.error}
+              />
+            </div>
+
+            {/* Habits — tall right */}
+            <div className="min-h-[300px] lg:col-span-3 lg:row-span-2 xl:col-span-3 xl:row-span-2">
+              <Card className="flex h-full flex-col">
+                <CardHeader>
+                  <CardTitle>Habits</CardTitle>
+                </CardHeader>
+                <CardContent className="min-h-0 flex-1 overflow-y-auto">
+                  <HabitChecklist
+                    date={currentDate}
+                    habits={habits}
+                    onHabitsChange={setHabits}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Job Tracker */}
+            <div className="min-h-[200px] lg:col-span-3 xl:col-span-3">
+              <JobTrackerPanel className="h-full" />
+            </div>
+
+            {/* Heatmap */}
+            <div className="lg:col-span-3 xl:col-span-3">
+              <CompletionHeatmap
+                className="h-full"
+                cells={insights?.heatmap ?? []}
+                insightsLoading={insightsLoading}
+              />
+            </div>
           </div>
         </>
       )}
