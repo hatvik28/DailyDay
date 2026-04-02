@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, HeartPulse } from "lucide-react";
+import { Activity, HeartPulse, Loader2 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,7 @@ interface HealthSummaryPanelProps {
   summaries: HealthSummaryCard[];
   error?: string | null;
   className?: string;
+  loading?: boolean;
 }
 
 export default function HealthSummaryPanel({
@@ -21,6 +22,7 @@ export default function HealthSummaryPanel({
   summaries,
   error,
   className,
+  loading,
 }: HealthSummaryPanelProps) {
   return (
     <Card className={cn("flex flex-col", className)}>
@@ -32,7 +34,11 @@ export default function HealthSummaryPanel({
         <CardDescription>Pattern-based suggestions from your last 7 days</CardDescription>
       </CardHeader>
       <CardContent className="min-h-0 flex-1 space-y-3 overflow-y-auto">
-        {!connected ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : !connected ? (
           <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
             {error ?? "Connect Fitbit to unlock dashboard health summaries."}
           </div>

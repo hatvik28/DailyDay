@@ -42,7 +42,13 @@ export default function CompletionHeatmap({ cells, className, insightsLoading }:
         <div className="flex items-center justify-between gap-3">
           <CardTitle>Completion heatmap</CardTitle>
           {insightsLoading && (
-            <span className="text-xs text-muted-foreground">Refreshing…</span>
+            <span
+              role="status"
+              aria-live="polite"
+              className="text-xs text-muted-foreground"
+            >
+              Refreshing…
+            </span>
           )}
         </div>
         <CardDescription>Last 12 weeks of daily task completion</CardDescription>

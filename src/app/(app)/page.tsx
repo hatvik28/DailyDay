@@ -195,7 +195,7 @@ function DashboardContent() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex h-full min-h-0 flex-col gap-4">
       <DayNavigation date={currentDate} onDateChange={setCurrentDate} />
 
       {loading ? (
@@ -227,7 +227,7 @@ function DashboardContent() {
           </section>
 
           {/* Bento grid */}
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-6 lg:grid-rows-[1fr_1fr_auto] xl:grid-cols-12 xl:grid-rows-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:h-[calc(100vh-9rem)]">
+          <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-6 lg:grid-rows-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:grid-cols-12">
             {/* Tasks — tall left */}
             <div className="min-h-[300px] lg:col-span-3 lg:row-span-2 xl:col-span-3 xl:row-span-2">
               <Card className="flex h-full flex-col">
@@ -255,6 +255,7 @@ function DashboardContent() {
             <div className="min-h-[200px] lg:col-span-3 xl:col-span-3">
               <HealthSummaryPanel
                 className="h-full"
+                loading={insightsLoading && insights === null}
                 connected={insights?.health.connected ?? false}
                 summaries={insights?.health.summaries ?? []}
                 error={insightsError ?? insights?.health.error}
