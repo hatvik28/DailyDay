@@ -51,7 +51,8 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const maxResults = Math.min(Number(searchParams.get("max") ?? "10"), 20);
+    const parsed = Number(searchParams.get("max") ?? "10");
+    const maxResults = Number.isFinite(parsed) ? Math.max(1, Math.min(Math.floor(parsed), 20)) : 10;
     const query = searchParams.get("q") ?? "";
 
     const accessToken = await getValidAccessToken(user.id!);
