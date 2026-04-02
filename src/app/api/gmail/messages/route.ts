@@ -64,16 +64,12 @@ export async function GET(request: Request) {
       });
     }
 
-    const { emails, total, fromCache } = await getCachedGmailMessages(
+    const { emails, total } = await getCachedGmailMessages(
       user.id!,
       accessToken,
       maxResults,
       query
     );
-
-    if (fromCache) {
-      console.log("[Gmail Messages] Served from cache");
-    }
 
     return NextResponse.json({
       connected: true,
