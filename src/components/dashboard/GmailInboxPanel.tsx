@@ -45,7 +45,11 @@ const TAG_STYLES: Record<GmailEmail["tag"], string> = {
     "bg-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200",
 };
 
-export default function GmailInboxPanel() {
+interface GmailInboxPanelProps {
+  className?: string;
+}
+
+export default function GmailInboxPanel({ className }: GmailInboxPanelProps) {
   const [emails, setEmails] = useState<GmailEmail[]>([]);
   const [connected, setConnected] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
@@ -93,7 +97,7 @@ export default function GmailInboxPanel() {
   // --- Not connected state ---
   if (connected === false) {
     return (
-      <Card>
+      <Card className={cn("flex flex-col", className)}>
         <CardHeader>
           <div className="flex items-center gap-2">
             <Mail className="h-5 w-5 text-primary" />
@@ -103,12 +107,13 @@ export default function GmailInboxPanel() {
             Connect your Gmail to see real emails on your dashboard
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <a href="/api/gmail/connect">
-            <Button variant="outline" className="w-full gap-2">
-              <Mail className="h-4 w-4" />
-              Connect Gmail
-            </Button>
+        <CardContent className="min-h-0 flex-1">
+          <a
+            href="/api/gmail/connect"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            <Mail className="h-4 w-4" />
+            Connect Gmail
           </a>
         </CardContent>
       </Card>
@@ -118,14 +123,14 @@ export default function GmailInboxPanel() {
   // --- Loading state ---
   if (loading) {
     return (
-      <Card>
+      <Card className={cn("flex flex-col", className)}>
         <CardHeader>
           <div className="flex items-center gap-2">
             <Mail className="h-5 w-5 text-primary" />
             <CardTitle>Gmail Inbox</CardTitle>
           </div>
         </CardHeader>
-        <CardContent className="flex items-center justify-center py-8">
+        <CardContent className="flex min-h-0 flex-1 items-center justify-center">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </CardContent>
       </Card>
@@ -134,7 +139,7 @@ export default function GmailInboxPanel() {
 
   // --- Connected state ---
   return (
-    <Card>
+    <Card className={cn("flex flex-col", className)}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -172,7 +177,7 @@ export default function GmailInboxPanel() {
             : "No recent emails"}
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="min-h-0 flex-1 space-y-3 overflow-y-auto">
         {emails.length === 0 ? (
           <p className="py-4 text-center text-sm text-muted-foreground">
             <MailOpen className="mx-auto mb-2 h-8 w-8" />
