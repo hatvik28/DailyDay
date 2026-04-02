@@ -35,8 +35,9 @@ export default function HealthSummaryPanel({
       </CardHeader>
       <CardContent className="min-h-0 flex-1 space-y-3 overflow-y-auto">
         {loading ? (
-          <div className="flex items-center justify-center py-6">
+          <div role="status" aria-live="polite" className="flex items-center justify-center py-6">
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            <span className="sr-only">Loading health insights</span>
           </div>
         ) : !connected ? (
           <div className="rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">

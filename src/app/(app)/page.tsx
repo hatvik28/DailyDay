@@ -131,10 +131,10 @@ function DashboardContent() {
   }, []);
 
   const loadInsights = useCallback(async (date: string, background = false) => {
+    setInsightsLoading(true);
     if (!background) {
-      setInsightsLoading(true);
+      setInsightsError(null);
     }
-    setInsightsError(null);
 
     try {
       const res = await fetch(`/api/dashboard-insights?date=${date}`);
@@ -148,9 +148,7 @@ function DashboardContent() {
     } catch (loadError) {
       setInsightsError(loadError instanceof Error ? loadError.message : "Something went wrong");
     } finally {
-      if (!background) {
-        setInsightsLoading(false);
-      }
+      setInsightsLoading(false);
     }
   }, []);
 
@@ -227,7 +225,7 @@ function DashboardContent() {
           </section>
 
           {/* Bento grid */}
-          <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-6 lg:grid-rows-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:grid-cols-12">
+          <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-6 lg:grid-rows-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] xl:grid-cols-12 xl:grid-rows-[minmax(0,1fr)_minmax(0,1fr)_auto]">
             {/* Tasks — tall left */}
             <div className="min-h-[300px] lg:col-span-3 lg:row-span-2 xl:col-span-3 xl:row-span-2">
               <Card className="flex h-full flex-col">
