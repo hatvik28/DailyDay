@@ -1,6 +1,23 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "./auth.config";
+import { loginLimiter, getClientIp } from "./rate-limit";
+
+class RateLimitError extends CredentialsSignin {
+  code = "rate_limited";
+}
+
+/** Consume an extra rate-limit point to penalise failed credentials. */
+async function penaliseFailedAttempt(ip: string): Promise<null> {
+  try {
+    await loginLimiter.consume(ip);
+  } catch (error: unknown) {
+    // RateLimiterRes (quota exhausted) is expected — swallow it.
+    // Real errors (e.g. Postgres connection failure) must surface.
+    if (error instanceof Error) throw error;
+  }
+  return null;
+}
 
 const nextAuth = NextAuth({
   ...authConfig,
@@ -11,7 +28,14 @@ const nextAuth = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, request) {
+        const ip = getClientIp(request);
+        try {
+          await loginLimiter.consume(ip);
+        } catch {
+          throw new RateLimitError();
+        }
+
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
@@ -31,12 +55,12 @@ const nextAuth = NextAuth({
         });
 
         if (!user) {
-          return null;
+          return penaliseFailedAttempt(ip);
         }
 
         const passwordMatch = await bcrypt.compare(password, user.passwordHash);
         if (!passwordMatch) {
-          return null;
+          return penaliseFailedAttempt(ip);
         }
 
         return {

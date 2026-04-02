@@ -42,8 +42,8 @@ export default function RegisterPage() {
     if (!password) {
       return "Password is required.";
     }
-    if (password.length < 6) {
-      return "Password must be at least 6 characters.";
+    if (password.length < 8) {
+      return "Password must be at least 8 characters.";
     }
     if (password !== confirmPassword) {
       return "Passwords do not match.";
@@ -165,7 +165,7 @@ export default function RegisterPage() {
               name="password"
               type="password"
               autoComplete="new-password"
-              placeholder="At least 6 characters"
+              placeholder="At least 8 characters"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               disabled={loading}

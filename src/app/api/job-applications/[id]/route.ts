@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseISO } from "date-fns";
 import { getRequiredUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { validateJobApplication, type JobApplicationInput } from "@/lib/job-applications";
@@ -51,7 +52,7 @@ export async function PUT(
         ...(body.location != null && { location: body.location.trim() }),
         ...(body.remote != null && { remote: body.remote }),
         ...(body.notes != null && { notes: body.notes.trim() }),
-        ...(body.respondedAt != null && { respondedAt: new Date(body.respondedAt) }),
+        ...(body.respondedAt != null && { respondedAt: parseISO(body.respondedAt) }),
       },
     });
 

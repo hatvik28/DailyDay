@@ -68,6 +68,54 @@ describe("validateJobApplication", () => {
       validateJobApplication({ company: "Google", role: "SWE", salaryMin: 100000, salaryMax: 200000 })
     ).toBeNull();
   });
+
+  it("rejects invalid appliedAt", () => {
+    expect(
+      validateJobApplication({ company: "Google", role: "SWE", appliedAt: "not-a-date" })
+    ).toBe("appliedAt must be a valid ISO date (YYYY-MM-DD)");
+  });
+
+  it("rejects non-ISO appliedAt", () => {
+    expect(
+      validateJobApplication({ company: "Google", role: "SWE", appliedAt: "Mar 15 2026" })
+    ).toBe("appliedAt must be a valid ISO date (YYYY-MM-DD)");
+  });
+
+  it("rejects impossible calendar date for appliedAt", () => {
+    expect(
+      validateJobApplication({ company: "Google", role: "SWE", appliedAt: "2026-02-30" })
+    ).toBe("appliedAt must be a valid ISO date (YYYY-MM-DD)");
+  });
+
+  it("accepts valid appliedAt", () => {
+    expect(
+      validateJobApplication({ company: "Google", role: "SWE", appliedAt: "2026-03-15" })
+    ).toBeNull();
+  });
+
+  it("rejects invalid respondedAt", () => {
+    expect(
+      validateJobApplication({ company: "Google", role: "SWE", respondedAt: "not-a-date" })
+    ).toBe("respondedAt must be a valid ISO date (YYYY-MM-DD)");
+  });
+
+  it("accepts valid respondedAt", () => {
+    expect(
+      validateJobApplication({ company: "Google", role: "SWE", respondedAt: "2026-03-15" })
+    ).toBeNull();
+  });
+
+  it("rejects parseable but non-ISO respondedAt", () => {
+    expect(
+      validateJobApplication({ company: "Google", role: "SWE", respondedAt: "Mar 15 2026" })
+    ).toBe("respondedAt must be a valid ISO date (YYYY-MM-DD)");
+  });
+
+  it("rejects impossible calendar date for respondedAt", () => {
+    expect(
+      validateJobApplication({ company: "Google", role: "SWE", respondedAt: "2026-02-30" })
+    ).toBe("respondedAt must be a valid ISO date (YYYY-MM-DD)");
+  });
 });
 
 describe("computeJobStats", () => {

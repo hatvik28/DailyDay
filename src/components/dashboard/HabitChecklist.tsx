@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 
@@ -26,11 +26,13 @@ interface HabitChecklistProps {
 
 export default function HabitChecklist({ date, habits, onHabitsChange }: HabitChecklistProps) {
   const [habitState, setHabitState] = useState(habits);
+  const [prevHabits, setPrevHabits] = useState(habits);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
-  useEffect(() => {
+  if (habits !== prevHabits) {
+    setPrevHabits(habits);
     setHabitState(habits);
-  }, [habits]);
+  }
 
   const activeHabits = useMemo(() => habitState.filter((habit) => habit.active), [habitState]);
 

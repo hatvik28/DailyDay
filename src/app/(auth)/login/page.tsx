@@ -4,6 +4,7 @@ import { Suspense, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { LOGIN_LIMIT_DURATION } from "@/lib/rate-limit-config";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -57,7 +58,12 @@ function LoginForm() {
       }
 
       if (result.error) {
-        setError("Invalid email or password.");
+        if (result.code === "rate_limited") {
+          const minutes = Math.ceil(LOGIN_LIMIT_DURATION / 60);
+          setError(`Too many login attempts. Please try again in ${minutes} minutes.`);
+        } else {
+          setError("Invalid email or password.");
+        }
         return;
       }
 
