@@ -30,7 +30,6 @@ export async function getCachedFitbitDay(
   }
 
   // --- Cache miss or stale — fetch from API ---
-  console.log(`[Fitbit Cache] MISS for ${date} — fetching from API`);
   const fresh = await getFitbitHealthData(accessToken, date);
 
   // --- Write to cache ---

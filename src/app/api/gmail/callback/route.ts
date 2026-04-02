@@ -10,8 +10,6 @@ export async function GET(request: Request) {
   const state = searchParams.get("state");
   const error = searchParams.get("error");
 
-  console.log("[Gmail Callback] Starting. code:", !!code, "state:", !!state, "error:", error);
-
   // --- Step 1: Check for OAuth error from Google ---
   if (error) {
     console.error("[Gmail Callback] Google denied authorization:", error);
@@ -31,7 +29,6 @@ export async function GET(request: Request) {
   let user;
   try {
     user = await getRequiredUser();
-    console.log("[Gmail Callback] User authenticated:", user.id);
   } catch (err) {
     console.error("[Gmail Callback] User not authenticated:", err);
     return NextResponse.redirect(new URL("/login", request.url));
@@ -40,7 +37,6 @@ export async function GET(request: Request) {
   // --- Step 3: Validate OAuth state ---
   const cookieStore = await cookies();
   const savedState = cookieStore.get("gmail_oauth_state")?.value;
-  console.log("[Gmail Callback] State check — saved:", !!savedState, "received:", !!state, "match:", savedState === state);
 
   // NOTE: Skip state validation if cookie was lost during cross-origin redirect.
   // This is acceptable for a local dev app with credentials auth.
@@ -59,7 +55,6 @@ export async function GET(request: Request) {
   let tokens;
   try {
     tokens = await exchangeCodeForTokens(code);
-    console.log("[Gmail Callback] Token exchange success. Has refresh_token:", !!tokens.refresh_token, "expires_in:", tokens.expires_in);
   } catch (err) {
     console.error("[Gmail Callback] Token exchange FAILED:", err);
     return NextResponse.redirect(
@@ -80,7 +75,6 @@ export async function GET(request: Request) {
   try {
     const profile = await getProfile(tokens.access_token);
     email = profile?.emailAddress ?? "";
-    console.log("[Gmail Callback] Profile fetched. Email:", email);
   } catch (err) {
     console.warn("[Gmail Callback] Profile fetch failed (non-critical):", err);
   }
@@ -105,7 +99,6 @@ export async function GET(request: Request) {
         scopes: tokens.scope,
       },
     });
-    console.log("[Gmail Callback] Token saved to database successfully");
   } catch (err) {
     console.error("[Gmail Callback] Database save FAILED:", err);
     return NextResponse.redirect(
@@ -121,6 +114,5 @@ export async function GET(request: Request) {
     maxAge: 0,
   });
 
-  console.log("[Gmail Callback] Complete — redirecting to dashboard");
   return response;
 }

@@ -43,8 +43,6 @@ export async function getCachedGmailMessages(
   }
 
   // --- Cache miss or stale — fetch from API ---
-  console.log("[Gmail Cache] MISS — fetching from API");
-
   const listResult = await listMessages(accessToken, maxResults, query);
 
   if (!listResult?.messages?.length) {
