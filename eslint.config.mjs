@@ -5,7 +5,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    ignores: [".next/**", "node_modules/**", "src/generated/**"],
+    ignores: [".next/**", "node_modules/**", "src/generated/**", ".tmp-tests/**", "coverage/**"],
   },
   {
     rules: {
