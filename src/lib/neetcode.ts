@@ -164,6 +164,7 @@ export interface NeetcodeProblemInput {
   listTag?: string;
   timeMinutes?: number | null;
   notes?: string;
+  interviewReady?: boolean;
   solvedAt?: string;
 }
 
@@ -187,6 +188,9 @@ export function validateNeetcodeProblem(input: NeetcodeProblemInput): string | n
     if (input.timeMinutes < 0) return "Time cannot be negative";
   }
   if (input.notes !== undefined && typeof input.notes !== "string") return "Notes must be a string";
+  if (input.interviewReady !== undefined && typeof input.interviewReady !== "boolean") {
+    return "Interview ready must be a boolean";
+  }
   return null;
 }
 
@@ -219,15 +223,17 @@ export interface NeetcodeStats {
   byTopic: Record<Topic, number>;
   dueForReview: number;
   masteredCount: number;
+  interviewReadyCount: number;
 }
 
 export function computeNeetcodeStats(
-  problems: { difficulty: string; topic: string; reviews: { nextReviewAt: Date | string }[] }[],
+  problems: { difficulty: string; topic: string; interviewReady: boolean; reviews: { nextReviewAt: Date | string }[] }[],
 ): NeetcodeStats {
   const byDifficulty = Object.fromEntries(DIFFICULTIES.map((d) => [d, 0])) as Record<Difficulty, number>;
   const byTopic = Object.fromEntries(TOPICS.map((t) => [t, 0])) as Record<Topic, number>;
   let dueForReview = 0;
   let masteredCount = 0;
+  let interviewReadyCount = 0;
   const now = new Date();
 
   for (const problem of problems) {
@@ -236,6 +242,12 @@ export function computeNeetcodeStats(
     }
     if (isValidTopic(problem.topic)) {
       byTopic[problem.topic]++;
+    }
+
+    if (problem.interviewReady) {
+      interviewReadyCount++;
+      // Interview-ready problems are done — skip review logic
+      continue;
     }
 
     if (problem.reviews.length === 0) {
@@ -254,5 +266,5 @@ export function computeNeetcodeStats(
     }
   }
 
-  return { total: problems.length, byDifficulty, byTopic, dueForReview, masteredCount };
+  return { total: problems.length, byDifficulty, byTopic, dueForReview, masteredCount, interviewReadyCount };
 }

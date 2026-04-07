@@ -253,9 +253,10 @@ model NeetcodeProblem {
   difficulty  String   @default("medium")  // easy, medium, hard
   topic       String   @default("arrays_hashing")
   listTag     String   @default("neetcode_150") // neetcode_150, blind_75, custom
-  timeMinutes Int?
-  notes       String   @default("")
-  solvedAt    DateTime @default(now())
+  timeMinutes    Int?
+  notes          String   @default("")
+  interviewReady Boolean  @default(false)
+  solvedAt       DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
