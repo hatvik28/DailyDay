@@ -169,8 +169,8 @@ export interface NeetcodeProblemInput {
 }
 
 export function validateNeetcodeProblem(input: NeetcodeProblemInput): string | null {
-  if (!input.title?.trim()) return "Title is required";
-  if (typeof input.title !== "string") return "Title must be a string";
+  if (input.title !== undefined && typeof input.title !== "string") return "Title must be a string";
+  if (!input.title || !input.title.trim()) return "Title is required";
   if (input.url !== undefined && typeof input.url !== "string") return "URL must be a string";
   if (input.difficulty !== undefined && !isValidDifficulty(input.difficulty)) {
     return `Invalid difficulty. Must be one of: ${DIFFICULTIES.join(", ")}`;

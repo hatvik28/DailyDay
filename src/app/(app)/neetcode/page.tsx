@@ -9,7 +9,6 @@ import {
   Trash2,
   X,
   CheckCircle2,
-  Clock,
   RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,7 +38,6 @@ import {
   computeNeetcodeStats,
   type Difficulty,
   type Topic,
-  type ReviewQuality,
 } from "@/lib/neetcode";
 
 interface NeetcodeReview {
