@@ -77,9 +77,23 @@ describe("validateNeetcodeProblem", () => {
     expect(validateNeetcodeProblem({ title: "Two Sum" })).toBeNull();
   });
 
+  it("rejects null input", () => {
+    expect(validateNeetcodeProblem(null as unknown as { title: string })).toBe("Invalid input");
+  });
+
   it("requires title", () => {
     expect(validateNeetcodeProblem({ title: "" })).toBe("Title is required");
     expect(validateNeetcodeProblem({ title: "  " })).toBe("Title is required");
+  });
+
+  it("rejects invalid solvedAt", () => {
+    expect(validateNeetcodeProblem({ title: "Two Sum", solvedAt: "not-a-date" })).toBe(
+      "solvedAt must be a valid date string",
+    );
+  });
+
+  it("accepts valid solvedAt", () => {
+    expect(validateNeetcodeProblem({ title: "Two Sum", solvedAt: "2026-01-01" })).toBeNull();
   });
 
   it("rejects non-string title", () => {
@@ -137,6 +151,10 @@ describe("validateNeetcodeProblem", () => {
 });
 
 describe("validateReviewInput", () => {
+  it("rejects null input", () => {
+    expect(validateReviewInput(null as unknown as { quality: string })).toBe("Invalid input");
+  });
+
   it("passes with valid quality", () => {
     expect(validateReviewInput({ quality: "good" })).toBeNull();
   });
@@ -197,6 +215,11 @@ describe("computeNextInterval", () => {
 
   it("never returns less than 1 day", () => {
     expect(computeNextInterval(1, "hard")).toBeGreaterThanOrEqual(1);
+  });
+
+  it("handles non-positive review numbers gracefully", () => {
+    expect(computeNextInterval(0, "good")).toBe(1);
+    expect(computeNextInterval(-1, "good")).toBe(1);
   });
 });
 

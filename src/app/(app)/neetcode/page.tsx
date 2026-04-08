@@ -91,15 +91,17 @@ export default function NeetcodePage() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [reviewForm, setReviewForm] = useState({ quality: "good" as string, timeMinutes: "", notes: "" });
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const loadProblems = useCallback(async () => {
     try {
+      setError(null);
       const res = await fetch("/api/neetcode");
       if (!res.ok) throw new Error("Failed to load");
       const data = await res.json();
       setProblems(data);
-    } catch (error) {
-      console.error("Failed to load problems:", error);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -240,10 +242,23 @@ export default function NeetcodePage() {
     return true;
   });
 
+  const hasActiveFilters = topicFilter !== "all" || difficultyFilter !== "all";
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-20">
+        <p className="text-sm text-destructive">{error}</p>
+        <Button variant="outline" size="sm" onClick={() => void loadProblems()}>
+          Retry
+        </Button>
       </div>
     );
   }
@@ -346,6 +361,7 @@ export default function NeetcodePage() {
       {viewMode === "table" ? (
         <TableView
           problems={filtered}
+          hasActiveFilters={hasActiveFilters}
           onEdit={openEdit}
           onDelete={setDeleteTarget}
           onReview={setReviewTarget}
@@ -354,6 +370,7 @@ export default function NeetcodePage() {
       ) : (
         <TopicView
           problems={filtered}
+          hasActiveFilters={hasActiveFilters}
           onEdit={openEdit}
           onReview={setReviewTarget}
           onToggleReady={handleToggleInterviewReady}
@@ -397,7 +414,7 @@ export default function NeetcodePage() {
       </Dialog>
 
       {/* Review Dialog */}
-      <Dialog open={!!reviewTarget} onOpenChange={(open) => { if (!open) setReviewTarget(null); }}>
+      <Dialog open={!!reviewTarget} onOpenChange={(open) => { if (!open) { setReviewTarget(null); setReviewForm({ quality: "good", timeMinutes: "", notes: "" }); } }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Review: {reviewTarget?.title}</DialogTitle>
@@ -608,12 +625,14 @@ function getReviewStatus(problem: NeetcodeProblem): { label: string; className: 
 
 function TableView({
   problems,
+  hasActiveFilters,
   onEdit,
   onDelete,
   onReview,
   onToggleReady,
 }: {
   problems: NeetcodeProblem[];
+  hasActiveFilters: boolean;
   onEdit: (p: NeetcodeProblem) => void;
   onDelete: (p: NeetcodeProblem) => void;
   onReview: (p: NeetcodeProblem) => void;
@@ -623,7 +642,9 @@ function TableView({
     return (
       <Card>
         <CardContent className="py-12 text-center text-sm text-muted-foreground">
-          No problems yet. Click &quot;Add Problem&quot; to get started.
+          {hasActiveFilters
+            ? "No problems match the current filters."
+            : "No problems yet. Click \"Add Problem\" to get started."}
         </CardContent>
       </Card>
     );
@@ -690,7 +711,7 @@ function TableView({
                         <Button
                           variant="ghost"
                           size="sm"
-                          title="Toggle interview ready"
+                          aria-label={problem.interviewReady ? `Mark ${problem.title} as not interview ready` : `Mark ${problem.title} as interview ready`}
                           onClick={() => onToggleReady(problem)}
                         >
                           <CheckCircle2 className={cn("size-4", problem.interviewReady ? "text-emerald-500" : "text-muted-foreground")} />
@@ -699,7 +720,7 @@ function TableView({
                           <Button
                             variant="ghost"
                             size="sm"
-                            title="Review this problem"
+                            aria-label={`Review ${problem.title}`}
                             onClick={() => onReview(problem)}
                           >
                             <RotateCcw className="size-4" />
@@ -712,6 +733,7 @@ function TableView({
                           variant="ghost"
                           size="icon"
                           className="size-7 text-destructive"
+                          aria-label={`Delete ${problem.title}`}
                           onClick={() => onDelete(problem)}
                         >
                           <Trash2 className="size-3.5" />
@@ -731,11 +753,13 @@ function TableView({
 
 function TopicView({
   problems,
+  hasActiveFilters,
   onEdit,
   onReview,
   onToggleReady,
 }: {
   problems: NeetcodeProblem[];
+  hasActiveFilters: boolean;
   onEdit: (p: NeetcodeProblem) => void;
   onReview: (p: NeetcodeProblem) => void;
   onToggleReady: (p: NeetcodeProblem) => void;
@@ -756,7 +780,9 @@ function TopicView({
     return (
       <Card>
         <CardContent className="py-12 text-center text-sm text-muted-foreground">
-          No problems match the current filters.
+          {hasActiveFilters
+            ? "No problems match the current filters."
+            : "No problems yet. Add your first problem to get started."}
         </CardContent>
       </Card>
     );
@@ -782,7 +808,7 @@ function TopicView({
                     <div className="flex min-w-0 items-center gap-2">
                       <button
                         onClick={() => onToggleReady(problem)}
-                        title="Toggle interview ready"
+                        aria-label={problem.interviewReady ? `Mark ${problem.title} as not interview ready` : `Mark ${problem.title} as interview ready`}
                         className="shrink-0"
                       >
                         <CheckCircle2
@@ -812,7 +838,7 @@ function TopicView({
                         variant="ghost"
                         size="icon"
                         className="size-7"
-                        title="Review"
+                        aria-label={`Review ${problem.title}`}
                         onClick={() => onReview(problem)}
                       >
                         <RotateCcw className="size-3.5" />

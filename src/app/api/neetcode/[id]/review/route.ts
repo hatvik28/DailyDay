@@ -25,7 +25,11 @@ export async function POST(
 
     let body: ReviewInput;
     try {
-      body = (await request.json()) as ReviewInput;
+      const parsed: unknown = await request.json();
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return NextResponse.json({ error: "Request body must be a JSON object" }, { status: 400 });
+      }
+      body = parsed as ReviewInput;
     } catch {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
@@ -35,37 +39,44 @@ export async function POST(
       return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
-    // Verify the problem exists and belongs to this user
-    const problem = await prisma.neetcodeProblem.findFirst({
-      where: { id, userId: user.id! },
-      include: { reviews: { orderBy: { reviewNumber: "desc" }, take: 1 } },
+    // Use a transaction to prevent duplicate reviewNumber from concurrent requests
+    const review = await prisma.$transaction(async (tx) => {
+      // Verify the problem exists and belongs to this user
+      const problem = await tx.neetcodeProblem.findFirst({
+        where: { id, userId: user.id! },
+        include: { reviews: { orderBy: { reviewNumber: "desc" }, take: 1 } },
+      });
+
+      if (!problem) {
+        return null;
+      }
+
+      // Determine review number (last review number + 1, or 1 if first review)
+      const lastReviewNumber = problem.reviews[0]?.reviewNumber ?? 0;
+      const reviewNumber = lastReviewNumber + 1;
+
+      // Calculate spaced repetition interval
+      const quality = body.quality as ReviewQuality;
+      const intervalDays = computeNextInterval(reviewNumber, quality);
+      const now = new Date();
+      const nextReviewAt = computeNextReviewDate(now, intervalDays);
+
+      return tx.neetcodeReview.create({
+        data: {
+          problemId: id,
+          reviewNumber,
+          quality,
+          intervalDays,
+          nextReviewAt,
+          timeMinutes: body.timeMinutes ?? null,
+          notes: body.notes?.trim() ?? "",
+        },
+      });
     });
 
-    if (!problem) {
+    if (!review) {
       return NextResponse.json({ error: "Problem not found" }, { status: 404 });
     }
-
-    // Determine review number (last review number + 1, or 1 if first review)
-    const lastReviewNumber = problem.reviews[0]?.reviewNumber ?? 0;
-    const reviewNumber = lastReviewNumber + 1;
-
-    // Calculate spaced repetition interval
-    const quality = body.quality as ReviewQuality;
-    const intervalDays = computeNextInterval(reviewNumber, quality);
-    const now = new Date();
-    const nextReviewAt = computeNextReviewDate(now, intervalDays);
-
-    const review = await prisma.neetcodeReview.create({
-      data: {
-        problemId: id,
-        reviewNumber,
-        quality,
-        intervalDays,
-        nextReviewAt,
-        timeMinutes: body.timeMinutes ?? null,
-        notes: body.notes?.trim() ?? "",
-      },
-    });
 
     return NextResponse.json(review, { status: 201 });
   } catch (error) {

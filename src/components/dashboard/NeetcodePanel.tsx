@@ -30,16 +30,17 @@ interface NeetcodePanelProps {
 export default function NeetcodePanel({ className }: NeetcodePanelProps) {
   const [problems, setProblems] = useState<NeetcodeProblemData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const load = useCallback(async () => {
     try {
+      setError(false);
       const res = await fetch("/api/neetcode");
-      if (res.ok) {
-        const data = await res.json();
-        setProblems(data);
-      }
+      if (!res.ok) throw new Error("Failed to load");
+      const data = await res.json();
+      setProblems(data);
     } catch {
-      // Silently fail on dashboard — not critical
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -75,6 +76,10 @@ export default function NeetcodePanel({ className }: NeetcodePanelProps) {
         {loading ? (
           <div className="flex justify-center py-6">
             <Loader2 className="size-5 animate-spin text-muted-foreground" />
+          </div>
+        ) : error ? (
+          <div className="py-6 text-center text-sm text-muted-foreground">
+            <p>Failed to load problems.</p>
           </div>
         ) : problems.length === 0 ? (
           <div className="py-6 text-center text-sm text-muted-foreground">
