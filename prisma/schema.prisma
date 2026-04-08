@@ -281,5 +281,6 @@ model NeetcodeReview {
 
   problem NeetcodeProblem @relation(fields: [problemId], references: [id], onDelete: Cascade)
 
+  @@unique([problemId, reviewNumber])
   @@index([problemId])
 }
