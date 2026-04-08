@@ -11,6 +11,7 @@ import CompletionHeatmap from "@/components/dashboard/CompletionHeatmap";
 import HealthSummaryPanel from "@/components/dashboard/HealthSummaryPanel";
 import GmailInboxPanel from "@/components/dashboard/GmailInboxPanel";
 import JobTrackerPanel from "@/components/dashboard/JobTrackerPanel";
+import NeetcodePanel from "@/components/dashboard/NeetcodePanel";
 import TaskList from "@/components/dashboard/TaskList";
 import HabitChecklist from "@/components/dashboard/HabitChecklist";
 
@@ -279,6 +280,11 @@ function DashboardContent() {
             {/* Job Tracker */}
             <div className="min-h-[200px] lg:col-span-3 xl:col-span-3">
               <JobTrackerPanel className="h-full" />
+            </div>
+
+            {/* NeetCode */}
+            <div className="min-h-[200px] lg:col-span-3 xl:col-span-3">
+              <NeetcodePanel className="h-full" />
             </div>
 
             {/* Heatmap */}
