@@ -24,13 +24,22 @@ export async function GET(request: Request) {
     const listTag = searchParams.get("listTag");
 
     const where: Record<string, unknown> = { userId: user.id! };
-    if (difficulty && isValidDifficulty(difficulty)) {
+    if (difficulty) {
+      if (!isValidDifficulty(difficulty)) {
+        return NextResponse.json({ error: "Invalid difficulty filter" }, { status: 400 });
+      }
       where.difficulty = difficulty;
     }
-    if (topic && isValidTopic(topic)) {
+    if (topic) {
+      if (!isValidTopic(topic)) {
+        return NextResponse.json({ error: "Invalid topic filter" }, { status: 400 });
+      }
       where.topic = topic;
     }
-    if (listTag && isValidListTag(listTag)) {
+    if (listTag) {
+      if (!isValidListTag(listTag)) {
+        return NextResponse.json({ error: "Invalid listTag filter" }, { status: 400 });
+      }
       where.listTag = listTag;
     }
 
@@ -58,7 +67,11 @@ export async function POST(request: Request) {
 
     let body: NeetcodeProblemInput;
     try {
-      body = (await request.json()) as NeetcodeProblemInput;
+      const parsed: unknown = await request.json();
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return NextResponse.json({ error: "Request body must be a JSON object" }, { status: 400 });
+      }
+      body = parsed as NeetcodeProblemInput;
     } catch {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }

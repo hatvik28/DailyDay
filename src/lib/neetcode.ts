@@ -138,6 +138,7 @@ const QUALITY_MULTIPLIERS: Record<ReviewQuality, number> = {
  * @returns Number of days until the next review
  */
 export function computeNextInterval(reviewNumber: number, quality: ReviewQuality): number {
+  if (reviewNumber < 1) return 1;
   const index = Math.min(reviewNumber - 1, BASE_INTERVALS.length - 1);
   const baseInterval = BASE_INTERVALS[index];
   const multiplier = QUALITY_MULTIPLIERS[quality];
@@ -169,6 +170,7 @@ export interface NeetcodeProblemInput {
 }
 
 export function validateNeetcodeProblem(input: NeetcodeProblemInput): string | null {
+  if (!input || typeof input !== "object") return "Invalid input";
   if (input.title !== undefined && typeof input.title !== "string") return "Title must be a string";
   if (!input.title || !input.title.trim()) return "Title is required";
   if (input.url !== undefined && typeof input.url !== "string") return "URL must be a string";
@@ -191,6 +193,11 @@ export function validateNeetcodeProblem(input: NeetcodeProblemInput): string | n
   if (input.interviewReady !== undefined && typeof input.interviewReady !== "boolean") {
     return "Interview ready must be a boolean";
   }
+  if (input.solvedAt !== undefined) {
+    if (typeof input.solvedAt !== "string" || isNaN(Date.parse(input.solvedAt))) {
+      return "solvedAt must be a valid date string";
+    }
+  }
   return null;
 }
 
@@ -201,6 +208,7 @@ export interface ReviewInput {
 }
 
 export function validateReviewInput(input: ReviewInput): string | null {
+  if (!input || typeof input !== "object") return "Invalid input";
   if (!input.quality) return "Quality rating is required";
   if (!isValidReviewQuality(input.quality)) {
     return `Invalid quality. Must be one of: ${REVIEW_QUALITIES.join(", ")}`;

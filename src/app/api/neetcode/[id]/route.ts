@@ -19,7 +19,11 @@ export async function PUT(
 
     let body: NeetcodeProblemInput;
     try {
-      body = (await request.json()) as NeetcodeProblemInput;
+      const parsed: unknown = await request.json();
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return NextResponse.json({ error: "Request body must be a JSON object" }, { status: 400 });
+      }
+      body = parsed as NeetcodeProblemInput;
     } catch {
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
