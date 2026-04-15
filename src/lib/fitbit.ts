@@ -140,8 +140,17 @@ async function fitbitGet(accessToken: string, path: string) {
   }
 
   if (!res.ok) {
-    console.error(`Fitbit API error ${path}:`, res.status);
-    return null;
+    // Read the body so we can see what Fitbit actually complained about.
+    // Truncate to avoid flooding logs with huge HTML error pages.
+    let bodySnippet: string;
+    try {
+      const text = await res.text();
+      bodySnippet = text.slice(0, 500);
+    } catch {
+      bodySnippet = "<failed to read response body>";
+    }
+    console.error(`Fitbit API error: ${path} → ${res.status} ${res.statusText} — body: ${bodySnippet}`);
+    throw new Error(`Fitbit ${path} returned ${res.status}: ${bodySnippet.slice(0, 200)}`);
   }
 
   return res.json();
@@ -176,18 +185,56 @@ export interface FitbitHealthData {
     bmi: number;
     date: string;
   } | null;
+  /**
+   * Per-endpoint error messages. A key is only present if that specific Fitbit
+   * endpoint failed. Callers should surface these to the UI so empty metrics
+   * are distinguishable from silently broken ones.
+   */
+  errors?: {
+    activity?: string;
+    heartRate?: string;
+    sleep?: string;
+    weight?: string;
+  };
 }
 
 export async function getFitbitHealthData(
   accessToken: string,
   date: string
 ): Promise<FitbitHealthData> {
-  const [activityRaw, heartRaw, sleepRaw, weightRaw] = await Promise.all([
+  // Use allSettled so one failing endpoint doesn't wipe the other three.
+  // Each settled result is either { status: "fulfilled", value } or
+  // { status: "rejected", reason }.
+  const [activityResult, heartResult, sleepResult, weightResult] = await Promise.allSettled([
     fitbitGet(accessToken, `/1/user/-/activities/date/${date}.json`),
     fitbitGet(accessToken, `/1/user/-/activities/heart/date/${date}/1d.json`),
     fitbitGet(accessToken, `/1.2/user/-/sleep/date/${date}.json`),
     fitbitGet(accessToken, `/1/user/-/body/log/weight/date/${date}.json`),
   ]);
+
+  // If any endpoint returned FITBIT_TOKEN_EXPIRED, surface it so the route
+  // handler can trigger a refresh + retry (same behavior as before).
+  for (const r of [activityResult, heartResult, sleepResult, weightResult]) {
+    if (r.status === "rejected" && r.reason instanceof Error && r.reason.message === "FITBIT_TOKEN_EXPIRED") {
+      throw r.reason;
+    }
+  }
+
+  const errors: NonNullable<FitbitHealthData["errors"]> = {};
+  const errorMessage = (reason: unknown): string =>
+    reason instanceof Error ? reason.message : String(reason);
+
+  const activityRaw = activityResult.status === "fulfilled" ? activityResult.value : null;
+  if (activityResult.status === "rejected") errors.activity = errorMessage(activityResult.reason);
+
+  const heartRaw = heartResult.status === "fulfilled" ? heartResult.value : null;
+  if (heartResult.status === "rejected") errors.heartRate = errorMessage(heartResult.reason);
+
+  const sleepRaw = sleepResult.status === "fulfilled" ? sleepResult.value : null;
+  if (sleepResult.status === "rejected") errors.sleep = errorMessage(sleepResult.reason);
+
+  const weightRaw = weightResult.status === "fulfilled" ? weightResult.value : null;
+  if (weightResult.status === "rejected") errors.weight = errorMessage(weightResult.reason);
 
   // Parse activity
   let activity: FitbitHealthData["activity"] = null;
@@ -256,7 +303,13 @@ export async function getFitbitHealthData(
     };
   }
 
-  return { activity, heartRate, sleep, weight };
+  return {
+    activity,
+    heartRate,
+    sleep,
+    weight,
+    ...(Object.keys(errors).length > 0 ? { errors } : {}),
+  };
 }
 
 // --- Token revocation ---
