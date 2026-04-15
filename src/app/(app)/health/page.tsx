@@ -73,6 +73,12 @@ interface HealthResponse {
   heartRate?: HeartRateData | null;
   sleep?: SleepData | null;
   weight?: WeightData | null;
+  errors?: {
+    activity?: string;
+    heartRate?: string;
+    sleep?: string;
+    weight?: string;
+  };
 }
 
 const EMPTY_METRIC_STYLES = {
@@ -518,37 +524,37 @@ function HealthContent() {
           {data?.activity ? (
             <StepsCard data={data.activity} />
           ) : (
-            <EmptyMetricCard icon={Footprints} label="Steps" color="emerald" />
+            <EmptyMetricCard icon={Footprints} label="Steps" color="emerald" error={data?.errors?.activity} />
           )}
 
           {data?.activity ? (
             <CaloriesCard data={data.activity} />
           ) : (
-            <EmptyMetricCard icon={Flame} label="Calories" color="orange" />
+            <EmptyMetricCard icon={Flame} label="Calories" color="orange" error={data?.errors?.activity} />
           )}
 
           {data?.heartRate ? (
             <HeartRateCard data={data.heartRate} />
           ) : (
-            <EmptyMetricCard icon={Heart} label="Heart Rate" color="red" />
+            <EmptyMetricCard icon={Heart} label="Heart Rate" color="red" error={data?.errors?.heartRate} />
           )}
 
           {data?.sleep ? (
             <SleepCard data={data.sleep} />
           ) : (
-            <EmptyMetricCard icon={Moon} label="Sleep" color="indigo" />
+            <EmptyMetricCard icon={Moon} label="Sleep" color="indigo" error={data?.errors?.sleep} />
           )}
 
           {data?.activity ? (
             <ActiveMinutesCard data={data.activity} />
           ) : (
-            <EmptyMetricCard icon={Dumbbell} label="Active Minutes" color="violet" />
+            <EmptyMetricCard icon={Dumbbell} label="Active Minutes" color="violet" error={data?.errors?.activity} />
           )}
 
           {data?.weight ? (
             <WeightCard data={data.weight} />
           ) : (
-            <EmptyMetricCard icon={Scale} label="Weight" color="teal" />
+            <EmptyMetricCard icon={Scale} label="Weight" color="teal" error={data?.errors?.weight} />
           )}
         </div>
       )}
@@ -580,10 +586,12 @@ function EmptyMetricCard({
   icon: Icon,
   label,
   color,
+  error,
 }: {
   icon: ComponentType<{ className?: string }>;
   label: string;
   color: keyof typeof EMPTY_METRIC_STYLES;
+  error?: string;
 }) {
   const styles = EMPTY_METRIC_STYLES[color];
 
@@ -596,7 +604,13 @@ function EmptyMetricCard({
         <CardTitle className="text-base">{label}</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground">No data for this date</p>
+        {error ? (
+          <p className="text-sm text-red-600 dark:text-red-400" title={error}>
+            Failed to load: {error}
+          </p>
+        ) : (
+          <p className="text-sm text-muted-foreground">No data for this date</p>
+        )}
       </CardContent>
     </Card>
   );
